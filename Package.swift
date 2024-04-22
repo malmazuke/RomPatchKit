@@ -12,9 +12,13 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "RomPatcher"),
+            name: "RomPatcher",
+            swiftSettings: [.interoperabilityMode(.Cxx)]
+        ),
         .testTarget(
             name: "RomPatcherTests",
-            dependencies: ["RomPatcher"]),
+            dependencies: ["RomPatcher"],
+            swiftSettings: [.interoperabilityMode(.Cxx)]
+        ),
     ]
 )
