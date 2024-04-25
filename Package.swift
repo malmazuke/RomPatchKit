@@ -38,6 +38,11 @@ let package = Package(
         .testTarget(
             name: "RomPatcherTests",
             dependencies: ["RomPatcher"],
+            resources: [
+                .copy("Resources/test.rom"),
+                .copy("Resources/expected.rom"),
+                .copy("Resources/patch.ips"),
+            ],
             swiftSettings: [.interoperabilityMode(.Cxx)]
         ),
     ]

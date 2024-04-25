@@ -29,4 +29,3 @@ public enum PatchFormat: String {
         }
     }
 }
-
