@@ -4,6 +4,10 @@ import PackageDescription
 
 let package = Package(
     name: "RomPatcher",
+    platforms: [
+        .macOS(.v12),
+        .iOS(.v13)
+    ],
     products: [
         .library(
             name: "RomPatcher",
@@ -12,11 +16,15 @@ let package = Package(
             name: "flips",
             targets: ["flips"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/realm/SwiftLint.git", from: "0.54.0")
+    ],
     targets: [
         .target(
             name: "RomPatcher",
             dependencies: ["flips"],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
+            swiftSettings: [.interoperabilityMode(.Cxx)],
+            plugins: [.plugin(name: "SwiftLintPlugin", package: "SwiftLint")]
         ),
         .target(
             name: "flips",
