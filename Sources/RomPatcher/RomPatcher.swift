@@ -5,6 +5,6 @@ import Foundation
 
 public protocol RomPatcher {
 
-    func applyPatch(romData: Data, patchData: Data) throws -> Data
+    func applyPatch(romURL: URL, patchURL: URL) throws -> Data
 
 }
