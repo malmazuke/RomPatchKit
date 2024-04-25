@@ -1,0 +1,5 @@
+module flips {
+    header "flips.h"
+
+    export *
+}

@@ -1,5 +1,4 @@
 // swift-tools-version: 5.9
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
@@ -9,11 +8,24 @@ let package = Package(
         .library(
             name: "RomPatcher",
             targets: ["RomPatcher"]),
+        .library(
+            name: "flips",
+            targets: ["flips"]),
     ],
     targets: [
         .target(
             name: "RomPatcher",
+            dependencies: ["flips"],
             swiftSettings: [.interoperabilityMode(.Cxx)]
+        ),
+        .target(
+            name: "flips",
+            path: "Sources/flips",
+            sources: [
+                "flips.cpp"
+            ],
+            publicHeadersPath: ".",
+            cxxSettings: [.headerSearchPath(".")]
         ),
         .testTarget(
             name: "RomPatcherTests",
