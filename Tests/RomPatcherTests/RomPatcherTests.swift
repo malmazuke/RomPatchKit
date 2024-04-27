@@ -2,11 +2,15 @@ import XCTest
 @testable import RomPatcher
 
 final class RomPatcherTests: XCTestCase {
-    func testExample() throws {
-        // XCTest Documentation
-        // https://developer.apple.com/documentation/xctest
 
-        // Defining Test Cases and Test Methods
-        // https://developer.apple.com/documentation/xctest/defining_test_cases_and_test_methods
+    var testSubject: RomPatcher!
+
+    override func setUp() {
+        testSubject = RomPatcher()
+    }
+
+    func testExample() throws {
+        let aString = testSubject.giveMeAForest()
+        XCTAssertEqual(aString, "This is a forest with a tree: This is a tree.")
     }
 }
