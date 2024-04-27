@@ -12,9 +12,6 @@ let package = Package(
         .library(
             name: "RomPatcher",
             targets: ["RomPatcher"]),
-        .library(
-            name: "flips",
-            targets: ["flips"]),
     ],
     dependencies: [
         .package(url: "https://github.com/realm/SwiftLint.git", from: "0.54.0")
@@ -22,18 +19,7 @@ let package = Package(
     targets: [
         .target(
             name: "RomPatcher",
-            dependencies: ["flips"],
-            swiftSettings: [.interoperabilityMode(.Cxx)],
             plugins: [.plugin(name: "SwiftLintPlugin", package: "SwiftLint")]
-        ),
-        .target(
-            name: "flips",
-            path: "Sources/flips",
-            sources: [
-                "flips.cpp"
-            ],
-            publicHeadersPath: ".",
-            cxxSettings: [.headerSearchPath(".")]
         ),
         .testTarget(
             name: "RomPatcherTests",
@@ -42,8 +28,7 @@ let package = Package(
                 .copy("Resources/test.rom"),
                 .copy("Resources/expected.rom"),
                 .copy("Resources/patch.ips"),
-            ],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
+            ]
         ),
     ]
 )
