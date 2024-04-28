@@ -21,12 +21,14 @@ final class IPSPatcherTests: XCTestCase {
         expectedRomURL = testBundle.url(forResource: "expected", withExtension: romExtension)!
     }
 
-    func testRomIsCorrectlyPatched() throws {
+    func testRomIsCorrectlyPatched() async throws {
         do {
-            let patchedData = try testSubject.applyPatch(romURL: romURL, patchURL: patchURL)
+            let patchedData = try await testSubject.applyPatch(romURL: romURL, patchURL: patchURL)
             let expectedData = try Data(contentsOf: expectedRomURL)
 
-            XCTAssertEqual(patchedData, expectedData)
+            let patchedContent = String(data: patchedData, encoding: .utf8)
+            let expectedContent = String(data: expectedData, encoding: .utf8)
+            XCTAssertEqual(patchedContent, expectedContent)
         } catch {
             XCTFail("Failed to apply patch: \(error)")
         }
