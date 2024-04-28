@@ -7,19 +7,19 @@
 
 import Foundation
 
-public protocol RomPatcher {
+public protocol RomPatcher: Actor {
 
-    func applyPatch(rom: Data, patch: Data) throws -> Data
+    func applyPatch(rom: Data, patch: Data) async throws -> Data
 
 }
 
 extension RomPatcher {
 
-    public func applyPatch(romURL: URL, patchURL: URL) throws -> Data {
+    public func applyPatch(romURL: URL, patchURL: URL) async throws -> Data {
         let romData = try Data(contentsOf: romURL)
         let patchData = try Data(contentsOf: patchURL)
 
-        return try applyPatch(rom: romData, patch: patchData)
+        return try await applyPatch(rom: romData, patch: patchData)
     }
 
 }
