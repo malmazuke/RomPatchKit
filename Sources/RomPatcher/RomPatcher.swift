@@ -9,7 +9,7 @@ import Foundation
 
 public protocol RomPatcher {
 
-    func applyPatch(romData: Data, patchData: Data) throws -> Data
+    func applyPatch(rom: Data, patch: Data) throws -> Data
 
 }
 
@@ -19,7 +19,7 @@ extension RomPatcher {
         let romData = try Data(contentsOf: romURL)
         let patchData = try Data(contentsOf: patchURL)
 
-        return try applyPatch(romData: romData, patchData: patchData)
+        return try applyPatch(rom: romData, patch: patchData)
     }
 
 }
