@@ -13,5 +13,7 @@ public enum PatchError: Error {
     case patchCorrupted
     case patchExceedsRomSize
     case rleBlockExceedsPatchSize
+    case sizeMismatch
+    case checksumMismatch
     case unknown
 }
