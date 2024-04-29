@@ -19,6 +19,15 @@
       }
     },
     {
+      "identity" : "delta-codec-cocoa",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ably/delta-codec-cocoa.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "3ee62ea40a63996b55818d44b3f0e56d8753be88"
+      }
+    },
+    {
       "identity" : "sourcekitten",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/jpsim/SourceKitten.git",

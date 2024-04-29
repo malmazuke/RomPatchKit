@@ -7,7 +7,7 @@
 
 import Foundation
 
-public actor IPSPatcher: RomPatcher {
+public final actor IPSPatcher: RomPatcher {
 
     private struct BlockDetails {
         let address: Int
