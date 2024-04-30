@@ -87,16 +87,15 @@ public final actor UPSPatcher: RomPatcher {
 
         let expectedOriginalCRC = extractChecksum(patch: patch, offset: 0)
         let expectedPatchedCRC = extractChecksum(patch: patch, offset: 4)
-        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8)
+//        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8)
 
         guard originalCRC == expectedOriginalCRC else {
-            throw PatchError.checksumMismatch
+            throw PatchError.checksumMismatch(type: "original", expected: expectedOriginalCRC, actual: originalCRC)
         }
         guard patchedCRC == expectedPatchedCRC else {
-            throw PatchError.checksumMismatch
-        }
+            throw PatchError.checksumMismatch(type: "patched", expected: expectedPatchedCRC, actual: patchedCRC)        }
 //        guard patchCRC == expectedPatchCRC else {
-//            throw PatchError.checksumMismatch
+//            throw PatchError.checksumMismatch(type: "patch", expected: expectedPatchCRC, actual: patchCRC)
 //        }
     }
 
