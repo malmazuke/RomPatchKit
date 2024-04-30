@@ -13,5 +13,8 @@ public enum PatchError: Error {
     case patchCorrupted
     case patchExceedsRomSize
     case rleBlockExceedsPatchSize
+    case sizeMismatch
+    case checksumMismatch(type: String, expected: UInt32, actual: UInt32)
+    case dataProcessingError(String)
     case unknown
 }

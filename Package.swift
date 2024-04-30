@@ -32,6 +32,7 @@ let package = Package(
                 .copy("Resources/test.rom"),
                 .copy("Resources/expected.rom"),
                 .copy("Resources/patch.ips"),
+                .copy("Resources/patch.ups"),
                 .copy("Resources/patch.xdelta"),
             ]
         ),

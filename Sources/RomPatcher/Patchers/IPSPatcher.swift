@@ -21,7 +21,9 @@ public final actor IPSPatcher: RomPatcher {
     private let blockSize = 2
 
     public func applyPatch(rom: Data, patch: Data) async throws -> Data {
-        try verifyPatch(patch)
+        guard patch.starts(with: patchHeader) else {
+            throw PatchError.invalidPatchHeader
+        }
 
         var modifiedROM = rom
 
@@ -49,12 +51,6 @@ public final actor IPSPatcher: RomPatcher {
         }
 
         return modifiedROM
-    }
-
-    private func verifyPatch(_ patch: Data) throws {
-        guard patch.starts(with: patchHeader) else {
-            throw PatchError.invalidPatchHeader
-        }
     }
 
     private func parseBlockDetails(from patch: Data, at offset: Int) throws -> BlockDetails {
