@@ -15,5 +15,6 @@ public enum PatchError: Error {
     case rleBlockExceedsPatchSize
     case sizeMismatch
     case checksumMismatch
+    case dataProcessingError(String)
     case unknown
 }

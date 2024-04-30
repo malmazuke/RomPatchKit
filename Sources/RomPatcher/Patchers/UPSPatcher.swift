@@ -5,8 +5,8 @@
 //  Created by Mark Feaver on 29/4/2024.
 //
 
-import zlib
 import Foundation
+import zlib
 
 public final actor UPSPatcher: RomPatcher {
 
@@ -58,13 +58,13 @@ public final actor UPSPatcher: RomPatcher {
 
                 // Ensure we do not write past the end of the original ROM.
                 if index < rom.count {
-                    rom[index] = rom[index] ^ byte  // Apply the XOR operation.
+                    rom[index] = rom[index] ^ byte // Apply the XOR operation.
                 } else {
                     // If index is beyond the end of the ROM, XOR with 0x00.
-                    rom.append(byte ^ 0x00)  // Equivalent to just appending byte.
+                    rom.append(byte ^ 0x00) // Equivalent to just appending byte.
                 }
 
-                index += 1  // Move to the next position in the ROM.
+                index += 1 // Move to the next position in the ROM.
             }
 
             guard patchData.isEmpty == false else {
@@ -75,20 +75,18 @@ public final actor UPSPatcher: RomPatcher {
     }
 
     private func verifyChecksums(original: Data, patched: Data, patch: Data) throws {
-        let originalCRC = calculateCRC32(data: original)
-        let patchedCRC = calculateCRC32(data: patched)
+        let originalCRC = try calculateCRC32(data: original)
+        let patchedCRC = try calculateCRC32(data: patched)
 
         // Assume the last 12 bytes of the patch are the three CRC32 values (each 4 bytes).
-        guard patch.count >= 12 else {
+        guard patch.count >= checksumSectionSize else {
             throw PatchError.invalidPatchData
         }
 
-        // Split the checksum data into individual checksums
         let expectedOriginalCRC = extractChecksum(patch: patch, offset: 0)
         let expectedPatchedCRC = extractChecksum(patch: patch, offset: 4)
         // The third checksum is for the patch itself, which we might calculate and verify elsewhere.
 
-        // Verify the calculated checksums against the expected values.
         guard originalCRC == expectedOriginalCRC else {
             throw PatchError.checksumMismatch
         }
@@ -98,7 +96,7 @@ public final actor UPSPatcher: RomPatcher {
     }
 
     private func extractChecksum(patch: Data, offset: Int) -> UInt32 {
-        let startIndex = patch.index(patch.endIndex, offsetBy: -12)
+        let startIndex = patch.index(patch.endIndex, offsetBy: -checksumSectionSize)
 
         let checksumData = patch.subdata(in: (startIndex + offset)..<(startIndex + 4 + offset))
 
@@ -126,10 +124,11 @@ private extension UPSPatcher {
         return result
     }
 
-    func calculateCRC32(data: Data) -> UInt32 {
-        return data.withUnsafeBytes { rawBufferPointer in
-            // Ensure the buffer is actually available
-            guard let baseAddress = rawBufferPointer.baseAddress else { return 0 }
+    func calculateCRC32(data: Data) throws -> UInt32 {
+        try data.withUnsafeBytes { rawBufferPointer in
+            guard let baseAddress = rawBufferPointer.baseAddress else {
+                throw PatchError.dataProcessingError("Unable to access data buffer base address.")
+            }
             let bytePointer = baseAddress.assumingMemoryBound(to: Bytef.self)
             return UInt32(crc32(0, bytePointer, uInt(rawBufferPointer.count)))
         }
