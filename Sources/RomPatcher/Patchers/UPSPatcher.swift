@@ -16,6 +16,7 @@ public final actor UPSPatcher: RomPatcher {
     }
 
     private let patchHeader = "UPS1".data(using: .utf8)!
+    private let checksumSectionSize = 12
 
     public func applyPatch(rom: Data, patch: Data) async throws -> Data {
         guard patch.starts(with: patchHeader) else {
@@ -32,10 +33,8 @@ public final actor UPSPatcher: RomPatcher {
 
         var patchedRom = rom
 
-        applyDifferences(to: &patchedRom, with: &patchData)
-
-        // Placeholder for checksum calculation and verification
-//        try verifyChecksums(original: rom, patched: patchedRom, patch: patch)
+        try applyDifferences(to: &patchedRom, with: &patchData)
+        try verifyChecksums(original: rom, patched: patchedRom, patch: patch)
 
         return patchedRom
     }
@@ -47,26 +46,35 @@ public final actor UPSPatcher: RomPatcher {
         return FileSizes(sourceSize: sourceSize, targetSize: targetSize)
     }
 
-    private func applyDifferences(to rom: inout Data, with patchData: inout Data) {
+    private func applyDifferences(to rom: inout Data, with patchData: inout Data) throws {
         var index = 0
-        while !patchData.isEmpty {
+
+        while patchData.count > checksumSectionSize {
             let offset = readVLI(from: &patchData)
             index += offset
-            while let byte = patchData.first, byte != 0 {
+
+            while let byte = patchData.first, byte != 0x00 {
+                patchData.removeFirst()  // Remove the byte from patch data as it's going to be used.
+
+                // Ensure we do not write past the end of the original ROM.
                 if index < rom.count {
-                    rom[index] = byte
-                    index += 1
+                    rom[index] = rom[index] ^ byte  // Apply the XOR operation.
+                } else {
+                    // If index is beyond the end of the ROM, XOR with 0x00.
+                    rom.append(byte ^ 0x00)  // Equivalent to just appending byte.
                 }
-                patchData.removeFirst()
+
+                index += 1  // Move to the next position in the ROM.
             }
-            if !patchData.isEmpty {
-                patchData.removeFirst() // Remove the zero byte indicating end of this block
+
+            guard patchData.isEmpty == false else {
+                throw PatchError.unexpectedPatchEOF
             }
+            patchData.removeFirst()  // Remove the terminating 0x00 byte.
         }
     }
 
     private func verifyChecksums(original: Data, patched: Data, patch: Data) throws {
-        // Calculate the CRC32 values for the original and patched data.
         let originalCRC = calculateCRC32(data: original)
         let patchedCRC = calculateCRC32(data: patched)
 
@@ -75,13 +83,9 @@ public final actor UPSPatcher: RomPatcher {
             throw PatchError.invalidPatchData
         }
 
-        // Extracting the CRC32 checksums from the patch
-        let checksumsStartIndex = patch.index(patch.endIndex, offsetBy: -12)
-        let checksumsData = patch[checksumsStartIndex...]
-
         // Split the checksum data into individual checksums
-        let expectedOriginalCRC = checksumsData.withUnsafeBytes { $0.load(fromByteOffset: 0, as: UInt32.self) }.littleEndian
-        let expectedPatchedCRC = checksumsData.withUnsafeBytes { $0.load(fromByteOffset: 4, as: UInt32.self) }.littleEndian
+        let expectedOriginalCRC = extractChecksum(patch: patch, offset: 0)
+        let expectedPatchedCRC = extractChecksum(patch: patch, offset: 4)
         // The third checksum is for the patch itself, which we might calculate and verify elsewhere.
 
         // Verify the calculated checksums against the expected values.
@@ -91,6 +95,14 @@ public final actor UPSPatcher: RomPatcher {
         guard patchedCRC == expectedPatchedCRC else {
             throw PatchError.checksumMismatch
         }
+    }
+
+    private func extractChecksum(patch: Data, offset: Int) -> UInt32 {
+        let startIndex = patch.index(patch.endIndex, offsetBy: -12)
+
+        let checksumData = patch.subdata(in: (startIndex + offset)..<(startIndex + 4 + offset))
+
+        return checksumData.withUnsafeBytes { $0.load(fromByteOffset: 0, as: UInt32.self) }.littleEndian
     }
 
 }
