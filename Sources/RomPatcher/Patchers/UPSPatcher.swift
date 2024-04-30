@@ -40,8 +40,8 @@ public final actor UPSPatcher: RomPatcher {
     }
 
     private func parseFileSizes(_ patch: inout Data) -> FileSizes {
-        let sourceSize = readVLI(from: &patch)
-        let targetSize = readVLI(from: &patch)
+        let sourceSize = Data.readVLI(from: &patch)
+        let targetSize = Data.readVLI(from: &patch)
 
         return FileSizes(sourceSize: sourceSize, targetSize: targetSize)
     }
@@ -50,7 +50,7 @@ public final actor UPSPatcher: RomPatcher {
         var index = 0
 
         while patchData.count > checksumSectionSize {
-            let offset = readVLI(from: &patchData)
+            let offset = Data.readVLI(from: &patchData)
             index += offset
 
             while let byte = patchData.first, byte != 0x00 {
@@ -80,8 +80,8 @@ public final actor UPSPatcher: RomPatcher {
             throw PatchError.invalidPatchData
         }
 
-        let originalCRC = try calculateCRC32(data: original)
-        let patchedCRC = try calculateCRC32(data: patched)
+        let originalCRC = try Data.calculateCRC32(data: original)
+        let patchedCRC = try Data.calculateCRC32(data: patched)
         // TODO: Add patch checksum verification back in once we know why it's not working
 //        let patchCRC = try calculateCRC32(data: patch.subdata(in: 0..<(patch.endIndex - checksumSectionSize))) // Exclude the checksum section from the data we're checking
 
@@ -105,37 +105,6 @@ public final actor UPSPatcher: RomPatcher {
         let checksumData = patch.subdata(in: checksumIndex..<(checksumIndex + 4))
 
         return checksumData.withUnsafeBytes { $0.load(as: UInt32.self) }.littleEndian
-    }
-
-}
-
-private extension UPSPatcher {
-
-    // Function to read a variable-length integer
-    func readVLI(from data: inout Data) -> Int {
-        var result = 0
-        var shift = 0
-        while true {
-            guard let byte = data.first else { break }
-            data.removeFirst()
-            let value = Int(byte & 0x7F)  // Extract the lower 7 bits
-            result |= (value << shift)
-            if (byte & 0x80) != 0 {  // Check if the highest bit is 1, indicating no more bytes
-                break
-            }
-            shift += 7  // Prepare shift for the next 7-bit block
-        }
-        return result
-    }
-
-    func calculateCRC32(data: Data) throws -> UInt32 {
-        try data.withUnsafeBytes { rawBufferPointer in
-            guard let baseAddress = rawBufferPointer.baseAddress else {
-                throw PatchError.dataProcessingError("Unable to access data buffer base address.")
-            }
-            let bytePointer = baseAddress.assumingMemoryBound(to: Bytef.self)
-            return UInt32(crc32(0, bytePointer, uInt(rawBufferPointer.count)))
-        }
     }
 
 }
