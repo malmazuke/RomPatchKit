@@ -75,17 +75,19 @@ public final actor UPSPatcher: RomPatcher {
     }
 
     private func verifyChecksums(original: Data, patched: Data, patch: Data) throws {
-        let originalCRC = try calculateCRC32(data: original)
-        let patchedCRC = try calculateCRC32(data: patched)
-
         // Assume the last 12 bytes of the patch are the three CRC32 values (each 4 bytes).
         guard patch.count >= checksumSectionSize else {
             throw PatchError.invalidPatchData
         }
 
+        let originalCRC = try calculateCRC32(data: original)
+        let patchedCRC = try calculateCRC32(data: patched)
+        // TODO: Add patch checksum verification back in once we know why it's not working
+//        let patchCRC = try calculateCRC32(data: patch.subdata(in: 0..<(patch.endIndex - checksumSectionSize))) // Exclude the checksum section from the data we're checking
+
         let expectedOriginalCRC = extractChecksum(patch: patch, offset: 0)
         let expectedPatchedCRC = extractChecksum(patch: patch, offset: 4)
-        // The third checksum is for the patch itself, which we might calculate and verify elsewhere.
+        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8)
 
         guard originalCRC == expectedOriginalCRC else {
             throw PatchError.checksumMismatch
@@ -93,14 +95,17 @@ public final actor UPSPatcher: RomPatcher {
         guard patchedCRC == expectedPatchedCRC else {
             throw PatchError.checksumMismatch
         }
+//        guard patchCRC == expectedPatchCRC else {
+//            throw PatchError.checksumMismatch
+//        }
     }
 
     private func extractChecksum(patch: Data, offset: Int) -> UInt32 {
-        let startIndex = patch.index(patch.endIndex, offsetBy: -checksumSectionSize)
+        let sectionIndex = patch.index(patch.endIndex, offsetBy: -checksumSectionSize)
+        let checksumIndex = sectionIndex + offset
+        let checksumData = patch.subdata(in: checksumIndex..<(checksumIndex + 4))
 
-        let checksumData = patch.subdata(in: (startIndex + offset)..<(startIndex + 4 + offset))
-
-        return checksumData.withUnsafeBytes { $0.load(fromByteOffset: 0, as: UInt32.self) }.littleEndian
+        return checksumData.withUnsafeBytes { $0.load(as: UInt32.self) }.littleEndian
     }
 
 }
