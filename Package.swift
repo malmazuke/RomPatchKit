@@ -15,15 +15,13 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ably/delta-codec-cocoa.git", branch: "main"),
-        .package(url: "https://github.com/realm/SwiftLint.git", from: "0.54.0")
     ],
     targets: [
         .target(
             name: "RomPatcher",
             dependencies: [
                 .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa")
-            ],
-            plugins: [.plugin(name: "SwiftLintPlugin", package: "SwiftLint")]
+            ]
         ),
         .testTarget(
             name: "RomPatcherTests",
