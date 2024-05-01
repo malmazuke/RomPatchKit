@@ -1,18 +1,18 @@
 import XCTest
-@testable import RomPatcher
+@testable import RomPatchKit
 
-final class IPSPatcherTests: XCTestCase {
+final class UPSPatcherTests: XCTestCase {
 
-    private let patchExtension = "ips"
+    private let patchExtension = "ups"
     private let romExtension = "rom"
 
-    private var testSubject: IPSPatcher!
+    private var testSubject: UPSPatcher!
     private var romURL: URL!
     private var patchURL: URL!
     private var expectedRomURL: URL!
 
     override func setUp() {
-        testSubject = IPSPatcher()
+        testSubject = UPSPatcher()
 
         let testBundle = Bundle.module
 

@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RomPatcher"
-               BuildableName = "RomPatcher"
-               BlueprintName = "RomPatcher"
+               BlueprintIdentifier = "RomPatchKit"
+               BuildableName = "RomPatchKit"
+               BlueprintName = "RomPatchKit"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -42,9 +42,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RomPatcherTests"
-               BuildableName = "RomPatcherTests"
-               BlueprintName = "RomPatcherTests"
+               BlueprintIdentifier = "RomPatchKitTests"
+               BuildableName = "RomPatchKitTests"
+               BlueprintName = "RomPatchKitTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -61,9 +61,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RomPatcherTests"
-               BuildableName = "RomPatcherTests"
-               BlueprintName = "RomPatcherTests"
+               BlueprintIdentifier = "RomPatchKitTests"
+               BuildableName = "RomPatchKitTests"
+               BlueprintName = "RomPatchKitTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
@@ -89,9 +89,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "RomPatcher"
-            BuildableName = "RomPatcher"
-            BlueprintName = "RomPatcher"
+            BlueprintIdentifier = "RomPatchKit"
+            BuildableName = "RomPatchKit"
+            BlueprintName = "RomPatchKit"
             ReferencedContainer = "container:">
          </BuildableReference>
       </MacroExpansion>

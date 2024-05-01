@@ -3,29 +3,29 @@
 import PackageDescription
 
 let package = Package(
-    name: "RomPatcher",
+    name: "RomPatchKit",
     platforms: [
         .macOS(.v12),
         .iOS(.v13)
     ],
     products: [
         .library(
-            name: "RomPatcher",
-            targets: ["RomPatcher"]),
+            name: "RomPatchKit",
+            targets: ["RomPatchKit"]),
     ],
     dependencies: [
         .package(url: "https://github.com/ably/delta-codec-cocoa.git", branch: "main"),
     ],
     targets: [
         .target(
-            name: "RomPatcher",
+            name: "RomPatchKit",
             dependencies: [
                 .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa")
             ]
         ),
         .testTarget(
-            name: "RomPatcherTests",
-            dependencies: ["RomPatcher"],
+            name: "RomPatchKitTests",
+            dependencies: ["RomPatchKit"],
             resources: [
                 .copy("Resources/test.rom"),
                 .copy("Resources/expected.rom"),
