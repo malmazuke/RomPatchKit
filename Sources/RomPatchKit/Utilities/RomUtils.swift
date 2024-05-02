@@ -10,7 +10,7 @@ import Foundation
 
 public struct RomUtils: Sendable {
 
-    static func extractRomDetails(romURL: URL) throws -> RomDetails {
+    public static func extractRomDetails(romURL: URL) throws -> RomDetails {
         let romData = try Data(contentsOf: romURL)
 
         // TODO: Unarchive if necessary
