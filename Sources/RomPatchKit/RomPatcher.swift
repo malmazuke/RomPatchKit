@@ -14,16 +14,16 @@ public protocol RomPatcher: Actor {
 
 }
 
-extension RomPatcher {
+public extension RomPatcher {
 
-    public func applyPatch(romURL: URL, patchURL: URL) async throws -> Data {
+    func applyPatch(romURL: URL, patchURL: URL) async throws -> Data {
         let romData = try Data(contentsOf: romURL)
         let patchData = try Data(contentsOf: patchURL)
 
         return try await applyPatch(rom: romData, patch: patchData)
     }
 
-    public static func extractRomDetails(romURL: URL) throws -> RomDetails {
+    static func extractRomDetails(romURL: URL) throws -> RomDetails {
         let romData = try Data(contentsOf: romURL)
             
         // TODO: Unarchive if necessary
