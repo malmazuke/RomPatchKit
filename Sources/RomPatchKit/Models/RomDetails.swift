@@ -9,9 +9,9 @@ import Foundation
 
 public struct RomDetails {
 
-    var crc32: Data?
-    var md5: Data?
-    var sha1: Data?
+    public var crc32: Data?
+    public var md5: Data?
+    public var sha1: Data?
 
 }
 
