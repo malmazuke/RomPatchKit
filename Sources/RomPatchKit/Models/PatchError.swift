@@ -5,7 +5,9 @@
 //  Created by Mark Feaver on 25/4/2024.
 //
 
+// TODO: Split these into different error types
 public enum PatchError: Error {
+    case unsupportedPatchFormat
     case invalidROMData
     case invalidPatchHeader
     case invalidPatchData
