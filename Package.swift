@@ -15,12 +15,14 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ably/delta-codec-cocoa.git", branch: "main"),
+        .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", branch: "main"),
     ],
     targets: [
         .target(
             name: "RomPatchKit",
             dependencies: [
-                .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa")
+                .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa"),
+                .product(name: "CryptoSwift", package: "cryptoswift"),
             ]
         ),
         .testTarget(

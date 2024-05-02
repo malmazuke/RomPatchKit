@@ -5,8 +5,8 @@
 //  Created by Mark Feaver on 29/4/2024.
 //
 
+import CryptoSwift
 import Foundation
-import zlib
 
 public final actor UPSPatcher: RomPatcher {
 
@@ -80,31 +80,29 @@ public final actor UPSPatcher: RomPatcher {
             throw PatchError.invalidPatchData
         }
 
-        let originalCRC = try Data.calculateCRC32(data: original)
-        let patchedCRC = try Data.calculateCRC32(data: patched)
-        // TODO: Add patch checksum verification back in once we know why it's not working
-//        let patchCRC = try calculateCRC32(data: patch.subdata(in: 0..<(patch.endIndex - checksumSectionSize))) // Exclude the checksum section from the data we're checking
+        let originalCRC = original.crc32()
+        let patchedCRC = patched.crc32()
+        let patchCRC = patch.subdata(in: 0..<(patch.endIndex - 4)).crc32() // Exclude the checksum section from the data we're checking
 
         let expectedOriginalCRC = extractChecksum(patch: patch, offset: 0)
         let expectedPatchedCRC = extractChecksum(patch: patch, offset: 4)
-//        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8)
+        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8)
 
         guard originalCRC == expectedOriginalCRC else {
-            throw PatchError.checksumMismatch(type: "original", expected: expectedOriginalCRC, actual: originalCRC)
+            throw PatchError.checksumMismatch(type: "original", expected: expectedOriginalCRC.toHexString(), actual: originalCRC.toHexString())
         }
         guard patchedCRC == expectedPatchedCRC else {
-            throw PatchError.checksumMismatch(type: "patched", expected: expectedPatchedCRC, actual: patchedCRC)        }
-//        guard patchCRC == expectedPatchCRC else {
-//            throw PatchError.checksumMismatch(type: "patch", expected: expectedPatchCRC, actual: patchCRC)
-//        }
+            throw PatchError.checksumMismatch(type: "patched", expected: expectedPatchedCRC.toHexString(), actual: patchedCRC.toHexString())
+        }
+        guard patchCRC == expectedPatchCRC else {
+            throw PatchError.checksumMismatch(type: "patch", expected: expectedPatchCRC.toHexString(), actual: patchCRC.toHexString())
+        }
     }
 
-    private func extractChecksum(patch: Data, offset: Int) -> UInt32 {
+    private func extractChecksum(patch: Data, offset: Int) -> Data {
         let sectionIndex = patch.index(patch.endIndex, offsetBy: -checksumSectionSize)
         let checksumIndex = sectionIndex + offset
-        let checksumData = patch.subdata(in: checksumIndex..<(checksumIndex + 4))
-
-        return checksumData.withUnsafeBytes { $0.load(as: UInt32.self) }.littleEndian
+        return Data(patch.subdata(in: checksumIndex..<(checksumIndex + 4)).reversed())
     }
 
 }
