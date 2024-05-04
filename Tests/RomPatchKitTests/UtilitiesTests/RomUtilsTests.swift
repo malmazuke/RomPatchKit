@@ -7,10 +7,10 @@ final class RomUtilsTests: XCTestCase {
     private let expectedMD5 = "65a8e27d8879283831b664bd8b7f0ad4"
     private let expectedSHA1 = "0a0a9f2a6772942557ab5355d76af442f8f65e01"
 
-    func testRomDetailsAreCorrectlyExtracted() {
+    func testRomDetailsAreCorrectlyExtracted() async {
         let romURL = Bundle.module.url(forResource: "test", withExtension: "rom")!
 
-        let details = try! RomUtils.extractRomDetails(romURL: romURL)
+        let details = try! await RomUtils.extractRomDetails(romURL: romURL)
 
         XCTAssertEqual(details.crc32String, expectedCRC32)
         XCTAssertEqual(details.md5String, expectedMD5)
