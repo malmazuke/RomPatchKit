@@ -27,8 +27,8 @@ public final actor UPSPatcher: RomPatcher {
 
         let fileSizes = parseFileSizes(&patchData)
 
-        guard rom.count == fileSizes.targetSize else {
-            throw PatchError.sizeMismatch
+        guard rom.count == fileSizes.sourceSize else {
+            throw PatchError.sourceSizeMismatch
         }
 
         var patchedRom = rom
@@ -36,12 +36,16 @@ public final actor UPSPatcher: RomPatcher {
         try applyDifferences(to: &patchedRom, with: &patchData)
         try verifyChecksums(original: rom, patched: patchedRom, patch: patch)
 
+        guard patchedRom.count == fileSizes.targetSize else {
+            throw PatchError.targetSizeMismatch
+        }
+
         return patchedRom
     }
 
     private func parseFileSizes(_ patch: inout Data) -> FileSizes {
-        let sourceSize = Data.readVLI(from: &patch)
-        let targetSize = Data.readVLI(from: &patch)
+        let sourceSize = Data.decodeNextVLI(from: &patch)
+        let targetSize = Data.decodeNextVLI(from: &patch)
 
         return FileSizes(sourceSize: sourceSize, targetSize: targetSize)
     }
@@ -50,7 +54,7 @@ public final actor UPSPatcher: RomPatcher {
         var index = 0
 
         while patchData.count > checksumSectionSize {
-            let offset = Data.readVLI(from: &patchData)
+            let offset = Data.decodeNextVLI(from: &patchData)
             index += offset
 
             while let byte = patchData.first, byte != 0x00 {

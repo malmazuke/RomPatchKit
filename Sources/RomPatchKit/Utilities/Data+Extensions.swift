@@ -9,19 +9,21 @@ import Foundation
 
 extension Data {
 
-    static func readVLI(from data: inout Data) -> Int {
-        var result = 0
-        var shift = 0
+    static func decodeNextVLI(from data: inout Data) -> Int {
+        var result = 0, shift = 1
+
         while true {
-            guard let byte = data.first else { break }
-            data.removeFirst()
-            let value = Int(byte & 0x7F)  // Extract the lower 7 bits
-            result |= (value << shift)
-            if (byte & 0x80) != 0 {  // Check if the highest bit is 1, indicating no more bytes
+            let x = data.removeFirst()
+            result += Int(x & 0x7f) * shift
+
+            if x & 0x80 != 0 {
                 break
             }
-            shift += 7  // Prepare shift for the next 7-bit block
+
+            shift <<= 7
+            result += shift
         }
+
         return result
     }
 

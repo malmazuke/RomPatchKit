@@ -28,7 +28,7 @@ public final actor BPSPatcher: RomPatcher {
         let fileDetails = parseFileDetails(&patchData)
 
         guard rom.count == fileDetails.sourceSize else {
-            throw PatchError.sizeMismatch
+            throw PatchError.sourceSizeMismatch
         }
 
         // Skip metadata
@@ -39,13 +39,17 @@ public final actor BPSPatcher: RomPatcher {
         try applyPatch(from: rom, to: &patchedRom, with: &patchData)
         try verifyChecksums(source: rom, target: patchedRom, patch: patch)
 
+        guard patchedRom.count == fileDetails.targetSize else {
+            throw PatchError.targetSizeMismatch
+        }
+
         return patchedRom
     }
 
     private func parseFileDetails(_ patch: inout Data) -> FileDetails {
-        let sourceSize = Data.readVLI(from: &patch)
-        let targetSize = Data.readVLI(from: &patch)
-        let metadataSize = Data.readVLI(from: &patch)
+        let sourceSize = Data.decodeNextVLI(from: &patch)
+        let targetSize = Data.decodeNextVLI(from: &patch)
+        let metadataSize = Data.decodeNextVLI(from: &patch)
 
         return FileDetails(sourceSize: sourceSize, targetSize: targetSize, metadataSize: metadataSize)
     }
@@ -56,7 +60,7 @@ public final actor BPSPatcher: RomPatcher {
         var targetRelativeOffset = 0
 
         while patchData.count > checksumSectionSize {
-            let data = Data.readVLI(from: &patchData)
+            let data = Data.decodeNextVLI(from: &patchData)
             let command = data & 3
             let length = (data >> 2) + 1
 
@@ -73,7 +77,7 @@ public final actor BPSPatcher: RomPatcher {
                     outputOffset += 1
                 }
             case 2: // SourceCopy
-                let offsetData = Data.readVLI(from: &patchData)
+                let offsetData = Data.decodeNextVLI(from: &patchData)
                 let sign = offsetData & 1
                 let offset = offsetData >> 1
 
@@ -84,7 +88,7 @@ public final actor BPSPatcher: RomPatcher {
                     sourceRelativeOffset += 1
                 }
             case 3: // TargetCopy
-                let offsetData = Data.readVLI(from: &patchData)
+                let offsetData = Data.decodeNextVLI(from: &patchData)
                 let sign = offsetData & 1
                 let offset = offsetData >> 1
 
