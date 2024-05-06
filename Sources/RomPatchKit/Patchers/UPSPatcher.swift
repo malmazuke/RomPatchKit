@@ -34,7 +34,7 @@ public final actor UPSPatcher: RomPatcher {
         var patchedRom = rom
 
         try applyDifferences(to: &patchedRom, with: &patchData)
-        try await verifyChecksums(original: rom, patched: patchedRom, patch: patch)
+        try await verifyChecksums(source: rom, target: patchedRom, patch: patch)
 
         guard patchedRom.count == fileSizes.targetSize else {
             throw PatchError.targetSizeMismatch
