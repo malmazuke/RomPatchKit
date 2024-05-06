@@ -25,7 +25,7 @@ public final actor BPSPatcher: RomPatcher {
         }
 
         var patchData = patch.dropFirst(patchHeader.count)
-        let fileDetails = parseFileDetails(&patchData)
+        let fileDetails = try parseFileDetails(&patchData)
 
         guard rom.count == fileDetails.sourceSize else {
             throw PatchError.sourceSizeMismatch
@@ -46,10 +46,10 @@ public final actor BPSPatcher: RomPatcher {
         return patchedRom
     }
 
-    private func parseFileDetails(_ patch: inout Data) -> FileDetails {
-        let sourceSize = Data.decodeNextVLI(from: &patch)
-        let targetSize = Data.decodeNextVLI(from: &patch)
-        let metadataSize = Data.decodeNextVLI(from: &patch)
+    private func parseFileDetails(_ patch: inout Data) throws -> FileDetails {
+        let sourceSize = try Data.decodeNextVLI(from: &patch)
+        let targetSize = try Data.decodeNextVLI(from: &patch)
+        let metadataSize = try Data.decodeNextVLI(from: &patch)
 
         return FileDetails(sourceSize: sourceSize, targetSize: targetSize, metadataSize: metadataSize)
     }
@@ -60,7 +60,7 @@ public final actor BPSPatcher: RomPatcher {
         var targetRelativeOffset = 0
 
         while patchData.count > checksumSectionSize {
-            let data = Data.decodeNextVLI(from: &patchData)
+            let data = try Data.decodeNextVLI(from: &patchData)
             let command = data & 3
             let length = (data >> 2) + 1
 
@@ -77,7 +77,7 @@ public final actor BPSPatcher: RomPatcher {
                     outputOffset += 1
                 }
             case 2: // SourceCopy
-                let offsetData = Data.decodeNextVLI(from: &patchData)
+                let offsetData = try Data.decodeNextVLI(from: &patchData)
                 let sign = offsetData & 1
                 let offset = offsetData >> 1
 
@@ -88,7 +88,7 @@ public final actor BPSPatcher: RomPatcher {
                     sourceRelativeOffset += 1
                 }
             case 3: // TargetCopy
-                let offsetData = Data.decodeNextVLI(from: &patchData)
+                let offsetData = try Data.decodeNextVLI(from: &patchData)
                 let sign = offsetData & 1
                 let offset = offsetData >> 1
 
@@ -115,7 +115,7 @@ public final actor BPSPatcher: RomPatcher {
         async let targetCRCTask = target.crc32()
         async let patchCRCTask = patch.subdata(in: 0..<(patch.count - 4)).crc32()
 
-        let (sourceCRC, targetCRC, patchCRC) = try await (sourceCRCTask, targetCRCTask, patchCRCTask)
+        let (sourceCRC, targetCRC, patchCRC) = await (sourceCRCTask, targetCRCTask, patchCRCTask)
 
         // Extract expected checksums from the end of the patch data
         let expectedSourceCRC = extractChecksum(patch: patch, offset: 0)

@@ -25,7 +25,7 @@ public final actor UPSPatcher: RomPatcher {
 
         var patchData = patch.dropFirst(patchHeader.count)
 
-        let fileSizes = parseFileSizes(&patchData)
+        let fileSizes = try parseFileSizes(&patchData)
 
         guard rom.count == fileSizes.sourceSize else {
             throw PatchError.sourceSizeMismatch
@@ -43,9 +43,9 @@ public final actor UPSPatcher: RomPatcher {
         return patchedRom
     }
 
-    private func parseFileSizes(_ patch: inout Data) -> FileSizes {
-        let sourceSize = Data.decodeNextVLI(from: &patch)
-        let targetSize = Data.decodeNextVLI(from: &patch)
+    private func parseFileSizes(_ patch: inout Data) throws -> FileSizes {
+        let sourceSize = try Data.decodeNextVLI(from: &patch)
+        let targetSize = try Data.decodeNextVLI(from: &patch)
 
         return FileSizes(sourceSize: sourceSize, targetSize: targetSize)
     }
@@ -54,7 +54,7 @@ public final actor UPSPatcher: RomPatcher {
         var index = 0
 
         while patchData.count > checksumSectionSize {
-            let offset = Data.decodeNextVLI(from: &patchData)
+            let offset = try Data.decodeNextVLI(from: &patchData)
             index += offset
 
             while let byte = patchData.first, byte != 0x00 {
@@ -88,7 +88,7 @@ public final actor UPSPatcher: RomPatcher {
         async let targetCRCTask = target.crc32()
         async let patchCRCTask = patch.subdata(in: 0..<(patch.endIndex - 4)).crc32() // Exclude the checksum section from the data we're checking
 
-        let (sourceCRC, targetCRC, patchCRC) = try await (sourceCRCTask, targetCRCTask, patchCRCTask)
+        let (sourceCRC, targetCRC, patchCRC) = await (sourceCRCTask, targetCRCTask, patchCRCTask)
 
         let expectedSourceCRC = extractChecksum(patch: patch, offset: 0)
         let expectedTargetCRC = extractChecksum(patch: patch, offset: 4)
