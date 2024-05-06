@@ -34,7 +34,7 @@ public final actor UPSPatcher: RomPatcher {
         var patchedRom = rom
 
         try applyDifferences(to: &patchedRom, with: &patchData)
-        try verifyChecksums(original: rom, patched: patchedRom, patch: patch)
+        try await verifyChecksums(original: rom, patched: patchedRom, patch: patch)
 
         guard patchedRom.count == fileSizes.targetSize else {
             throw PatchError.targetSizeMismatch
@@ -78,25 +78,27 @@ public final actor UPSPatcher: RomPatcher {
         }
     }
 
-    private func verifyChecksums(original: Data, patched: Data, patch: Data) throws {
+    private func verifyChecksums(source: Data, target: Data, patch: Data) async throws {
         // Assume the last 12 bytes of the patch are the three CRC32 values (each 4 bytes).
         guard patch.count >= checksumSectionSize else {
             throw PatchError.invalidPatchData
         }
 
-        let originalCRC = original.crc32()
-        let patchedCRC = patched.crc32()
-        let patchCRC = patch.subdata(in: 0..<(patch.endIndex - 4)).crc32() // Exclude the checksum section from the data we're checking
+        async let sourceCRCTask = source.crc32()
+        async let targetCRCTask = target.crc32()
+        async let patchCRCTask = patch.subdata(in: 0..<(patch.endIndex - 4)).crc32() // Exclude the checksum section from the data we're checking
 
-        let expectedOriginalCRC = extractChecksum(patch: patch, offset: 0)
-        let expectedPatchedCRC = extractChecksum(patch: patch, offset: 4)
+        let (sourceCRC, targetCRC, patchCRC) = try await (sourceCRCTask, targetCRCTask, patchCRCTask)
+
+        let expectedSourceCRC = extractChecksum(patch: patch, offset: 0)
+        let expectedTargetCRC = extractChecksum(patch: patch, offset: 4)
         let expectedPatchCRC = extractChecksum(patch: patch, offset: 8)
 
-        guard originalCRC == expectedOriginalCRC else {
-            throw PatchError.checksumMismatch(type: "original", expected: expectedOriginalCRC.toHexString(), actual: originalCRC.toHexString())
+        guard sourceCRC == expectedSourceCRC else {
+            throw PatchError.checksumMismatch(type: "original", expected: expectedSourceCRC.toHexString(), actual: sourceCRC.toHexString())
         }
-        guard patchedCRC == expectedPatchedCRC else {
-            throw PatchError.checksumMismatch(type: "patched", expected: expectedPatchedCRC.toHexString(), actual: patchedCRC.toHexString())
+        guard targetCRC == expectedTargetCRC else {
+            throw PatchError.checksumMismatch(type: "patched", expected: expectedTargetCRC.toHexString(), actual: targetCRC.toHexString())
         }
         guard patchCRC == expectedPatchCRC else {
             throw PatchError.checksumMismatch(type: "patch", expected: expectedPatchCRC.toHexString(), actual: patchCRC.toHexString())

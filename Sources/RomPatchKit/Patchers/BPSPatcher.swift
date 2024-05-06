@@ -37,7 +37,7 @@ public final actor BPSPatcher: RomPatcher {
         var patchedRom = Data(count: fileDetails.targetSize)
 
         try applyPatch(from: rom, to: &patchedRom, with: &patchData)
-        try verifyChecksums(source: rom, target: patchedRom, patch: patch)
+        try await verifyChecksums(source: rom, target: patchedRom, patch: patch)
 
         guard patchedRom.count == fileDetails.targetSize else {
             throw PatchError.targetSizeMismatch
@@ -104,16 +104,18 @@ public final actor BPSPatcher: RomPatcher {
         }
     }
 
-    private func verifyChecksums(source: Data, target: Data, patch: Data) throws {
+    private func verifyChecksums(source: Data, target: Data, patch: Data) async throws {
         // Ensure the patch data includes the checksum section
         guard patch.count >= checksumSectionSize else {
             throw PatchError.invalidPatchData
         }
 
         // Calculate CRC32 checksums for the source and target data
-        let sourceCRC = source.crc32()
-        let targetCRC = target.crc32()
-        let patchCRC = patch.subdata(in: 0..<(patch.count - 4)).crc32()
+        async let sourceCRCTask = source.crc32()
+        async let targetCRCTask = target.crc32()
+        async let patchCRCTask = patch.subdata(in: 0..<(patch.count - 4)).crc32()
+
+        let (sourceCRC, targetCRC, patchCRC) = try await (sourceCRCTask, targetCRCTask, patchCRCTask)
 
         // Extract expected checksums from the end of the patch data
         let expectedSourceCRC = extractChecksum(patch: patch, offset: 0)
