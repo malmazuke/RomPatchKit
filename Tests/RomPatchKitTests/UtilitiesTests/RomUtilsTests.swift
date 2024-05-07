@@ -12,7 +12,7 @@ final class RomUtilsTests: XCTestCase {
 
         let details = try! await RomUtils.extractRomDetails(romURL: romURL)
 
-        XCTAssertEqual(details.crc32String, expectedCRC32)
+        XCTAssertEqual(details.crc32, expectedCRC32)
         XCTAssertEqual(details.md5String, expectedMD5)
         XCTAssertEqual(details.sha1String, expectedSHA1)
     }

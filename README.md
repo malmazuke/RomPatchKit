@@ -17,5 +17,4 @@ For now, you can see it in action over at [github.com/malmazuke/RomPatcher](http
 This library uses the following third party libraries, all with permissive licenses:
 
 - [Delta Codec for Cocoa](https://github.com/ably/delta-codec-cocoa) (MIT License) - used for XDelta patches.
-
-- [CryptoSwift](https://github.com/krzyzanowskim/CryptoSwift) - used for CRC32, MD5, and SHA1 calculations.
+- [swift-hash](https://github.com/tayloraswift/swift-hash.git) (Apache-2.0 license) - used for CRC checks.

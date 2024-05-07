@@ -5,7 +5,6 @@
 //  Created by Mark Feaver on 29/4/2024.
 //
 
-import CryptoSwift
 import Foundation
 
 public final actor UPSPatcher: RomPatcher {
@@ -57,9 +56,7 @@ public final actor UPSPatcher: RomPatcher {
             let offset = try Data.decodeNextVLI(from: &patchData)
             index += offset
 
-            while let byte = patchData.first, byte != 0x00 {
-                patchData.removeFirst()  // Remove the byte from patch data as it's going to be used.
-
+            while let byte = patchData.popFirst(), byte != 0x00 {
                 // Ensure we do not write past the end of the original ROM.
                 if index < rom.count {
                     rom[index] = rom[index] ^ byte // Apply the XOR operation.
@@ -74,7 +71,6 @@ public final actor UPSPatcher: RomPatcher {
             guard patchData.isEmpty == false else {
                 throw PatchError.unexpectedPatchEOF
             }
-            patchData.removeFirst()  // Remove the terminating 0x00 byte.
         }
     }
 
@@ -90,18 +86,18 @@ public final actor UPSPatcher: RomPatcher {
 
         let (sourceCRC, targetCRC, patchCRC) = await (sourceCRCTask, targetCRCTask, patchCRCTask)
 
-        let expectedSourceCRC = extractChecksum(patch: patch, offset: 0)
-        let expectedTargetCRC = extractChecksum(patch: patch, offset: 4)
-        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8)
+        let expectedSourceCRC = extractChecksum(patch: patch, offset: 0).toHexString()
+        let expectedTargetCRC = extractChecksum(patch: patch, offset: 4).toHexString()
+        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8).toHexString()
 
         guard sourceCRC == expectedSourceCRC else {
-            throw PatchError.checksumMismatch(type: "original", expected: expectedSourceCRC.toHexString(), actual: sourceCRC.toHexString())
+            throw PatchError.checksumMismatch(type: "original", expected: expectedSourceCRC, actual: sourceCRC)
         }
         guard targetCRC == expectedTargetCRC else {
-            throw PatchError.checksumMismatch(type: "patched", expected: expectedTargetCRC.toHexString(), actual: targetCRC.toHexString())
+            throw PatchError.checksumMismatch(type: "patched", expected: expectedTargetCRC, actual: targetCRC)
         }
         guard patchCRC == expectedPatchCRC else {
-            throw PatchError.checksumMismatch(type: "patch", expected: expectedPatchCRC.toHexString(), actual: patchCRC.toHexString())
+            throw PatchError.checksumMismatch(type: "patch", expected: expectedPatchCRC, actual: patchCRC)
         }
     }
 

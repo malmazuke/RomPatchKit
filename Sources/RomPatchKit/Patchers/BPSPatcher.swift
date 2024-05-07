@@ -5,7 +5,6 @@
 //  Created by Mark Feaver on 29/4/2024.
 //
 
-import CryptoSwift
 import Foundation
 
 public final actor BPSPatcher: RomPatcher {
@@ -118,19 +117,19 @@ public final actor BPSPatcher: RomPatcher {
         let (sourceCRC, targetCRC, patchCRC) = await (sourceCRCTask, targetCRCTask, patchCRCTask)
 
         // Extract expected checksums from the end of the patch data
-        let expectedSourceCRC = extractChecksum(patch: patch, offset: 0)
-        let expectedTargetCRC = extractChecksum(patch: patch, offset: 4)
-        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8)
+        let expectedSourceCRC = extractChecksum(patch: patch, offset: 0).toHexString()
+        let expectedTargetCRC = extractChecksum(patch: patch, offset: 4).toHexString()
+        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8).toHexString()
 
         // Verify the calculated checksums against the expected values
         guard sourceCRC == expectedSourceCRC else {
-            throw PatchError.checksumMismatch(type: "source", expected: expectedSourceCRC.toHexString(), actual: sourceCRC.toHexString())
+            throw PatchError.checksumMismatch(type: "source", expected: expectedSourceCRC, actual: sourceCRC)
         }
         guard targetCRC == expectedTargetCRC else {
-            throw PatchError.checksumMismatch(type: "target", expected: expectedTargetCRC.toHexString(), actual: targetCRC.toHexString())
+            throw PatchError.checksumMismatch(type: "target", expected: expectedTargetCRC, actual: targetCRC)
         }
         guard patchCRC == expectedPatchCRC else {
-            throw PatchError.checksumMismatch(type: "patch", expected: expectedPatchCRC.toHexString(), actual: patchCRC.toHexString())
+            throw PatchError.checksumMismatch(type: "patch", expected: expectedPatchCRC, actual: patchCRC)
         }
     }
 

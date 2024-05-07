@@ -1,21 +1,21 @@
 {
   "pins" : [
     {
-      "identity" : "cryptoswift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/krzyzanowskim/CryptoSwift.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "c9c3df6ab812de32bae61fc0cd1bf6d45170ebf0"
-      }
-    },
-    {
       "identity" : "delta-codec-cocoa",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ably/delta-codec-cocoa.git",
       "state" : {
         "branch" : "main",
         "revision" : "3ee62ea40a63996b55818d44b3f0e56d8753be88"
+      }
+    },
+    {
+      "identity" : "swift-hash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tayloraswift/swift-hash.git",
+      "state" : {
+        "revision" : "c7ba0cde5eb63042c2196b02b65a770101c1ac11",
+        "version" : "0.5.0"
       }
     }
   ],

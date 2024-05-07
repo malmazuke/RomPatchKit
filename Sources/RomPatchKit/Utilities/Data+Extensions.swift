@@ -13,11 +13,9 @@ extension Data {
         var result = 0, shift = 1
 
         while true {
-            guard data.isEmpty == false else {
+            guard let x = data.popFirst() else {
                 throw PatchError.unexpectedPatchEOF
             }
-
-            let x = data.removeFirst()
             result += Int(x & 0x7f) * shift
 
             if x & 0x80 != 0 {
