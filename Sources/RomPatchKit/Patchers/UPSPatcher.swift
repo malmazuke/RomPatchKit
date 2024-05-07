@@ -7,15 +7,22 @@
 
 import Foundation
 
-public final actor UPSPatcher: RomPatcher {
+public final actor UPSPatcher: ChecksumContaining {
 
     private struct FileSizes {
         let sourceSize: Int
         let targetSize: Int
     }
 
+    let checksumSectionSize = 12
+
     private let patchHeader = "UPS1".data(using: .utf8)!
-    private let checksumSectionSize = 12
+
+}
+
+// MARK: - RomPatcher
+
+extension UPSPatcher: RomPatcher {
 
     public func applyPatch(rom: Data, patch: Data) async throws -> Data {
         guard patch.starts(with: patchHeader) else {
@@ -40,18 +47,6 @@ public final actor UPSPatcher: RomPatcher {
         }
 
         return patchedRom
-    }
-
-    public func getChecksums(from patch: Data) throws -> PatchChecksums? {
-        guard patch.count > checksumSectionSize else {
-            throw PatchError.unexpectedPatchEOF
-        }
-
-        let expectedSourceCRC = extractChecksum(patch: patch, offset: 0).toHexString()
-        let expectedTargetCRC = extractChecksum(patch: patch, offset: 4).toHexString()
-        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8).toHexString()
-
-        return PatchChecksums(sourceCRC32: expectedSourceCRC, targetCRC32: expectedTargetCRC, patchCRC32: expectedPatchCRC)
     }
 
     private func parseFileSizes(_ patch: inout Data) throws -> FileSizes {
@@ -86,13 +81,15 @@ public final actor UPSPatcher: RomPatcher {
         }
     }
 
+}
+
+// MARK: - ChecksumContaining
+
+extension UPSPatcher {
+
     private func verifyChecksums(source: Data, target: Data, patch: Data) async throws {
         // Ensure the patch data includes the checksum section
         let expectedChecksums = try getChecksums(from: patch)
-
-        guard let expectedChecksums else {
-            throw PatchError.invalidPatchData
-        }
 
         async let sourceCRCTask = source.crc32()
         async let targetCRCTask = target.crc32()
@@ -109,12 +106,6 @@ public final actor UPSPatcher: RomPatcher {
         guard patchCRC == expectedChecksums.patchCRC32 else {
             throw PatchError.checksumMismatch(type: "patch", expected: expectedChecksums.patchCRC32, actual: patchCRC)
         }
-    }
-
-    private func extractChecksum(patch: Data, offset: Int) -> Data {
-        let sectionIndex = patch.index(patch.endIndex, offsetBy: -checksumSectionSize)
-        let checksumIndex = sectionIndex + offset
-        return Data(patch.subdata(in: checksumIndex..<(checksumIndex + 4)).reversed())
     }
 
 }

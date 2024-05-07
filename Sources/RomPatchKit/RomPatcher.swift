@@ -10,7 +10,6 @@ import Foundation
 public protocol RomPatcher: Actor {
 
     func applyPatch(rom: Data, patch: Data) async throws -> Data
-    func getChecksums(from patch: Data) throws -> PatchChecksums?
 
 }
 
@@ -21,10 +20,6 @@ public extension RomPatcher {
         let patchData = try Data(contentsOf: patchURL)
 
         return try await applyPatch(rom: romData, patch: patchData)
-    }
-
-    func getChecksums(from patch: Data) throws -> PatchChecksums? {
-        nil
     }
 
 }

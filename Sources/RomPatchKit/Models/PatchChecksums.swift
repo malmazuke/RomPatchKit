@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct PatchChecksums {
+public struct UPSBPSPatchChecksums {
 
     public let sourceCRC32: String
     public let targetCRC32: String
