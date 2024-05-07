@@ -10,8 +10,6 @@
 
 Usage instructions and examples will be added here soon. Stay tuned!
 
-For now, you can see it in action over at [github.com/malmazuke/RomPatcher](https://github.com/malmazuke/RomPatcher).
-
 ## Credits
 
 This library uses the following third party libraries, all with permissive licenses:
