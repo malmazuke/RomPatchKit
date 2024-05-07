@@ -82,30 +82,3 @@ extension UPSPatcher: RomPatcher {
     }
 
 }
-
-// MARK: - ChecksumContaining
-
-extension UPSPatcher {
-
-    private func verifyChecksums(source: Data, target: Data, patch: Data) async throws {
-        // Ensure the patch data includes the checksum section
-        let expectedChecksums = try getChecksums(from: patch)
-
-        async let sourceCRCTask = source.crc32()
-        async let targetCRCTask = target.crc32()
-        async let patchCRCTask = patch.subdata(in: 0..<(patch.count - 4)).crc32()
-
-        let (sourceCRC, targetCRC, patchCRC) = await (sourceCRCTask, targetCRCTask, patchCRCTask)
-
-        guard sourceCRC == expectedChecksums.sourceCRC32 else {
-            throw PatchError.checksumMismatch(type: "original", expected: expectedChecksums.sourceCRC32, actual: sourceCRC)
-        }
-        guard targetCRC == expectedChecksums.targetCRC32 else {
-            throw PatchError.checksumMismatch(type: "patched", expected: expectedChecksums.targetCRC32, actual: targetCRC)
-        }
-        guard patchCRC == expectedChecksums.patchCRC32 else {
-            throw PatchError.checksumMismatch(type: "patch", expected: expectedChecksums.patchCRC32, actual: patchCRC)
-        }
-    }
-
-}

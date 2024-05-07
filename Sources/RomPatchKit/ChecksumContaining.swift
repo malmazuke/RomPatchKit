@@ -19,7 +19,7 @@ protocol ChecksumContaining<ChecksumSection>: Actor {
 
 // MARK: - UPS/BPS Checksums
 
-extension ChecksumContaining {
+extension ChecksumContaining where ChecksumSection == UPSBPSPatchChecksums {
 
     func getChecksums(from patch: Data) throws -> UPSBPSPatchChecksums {
         guard patch.count > checksumSectionSize else {
@@ -31,6 +31,27 @@ extension ChecksumContaining {
         let expectedPatchCRC = extractChecksum(patch: patch, offset: 8).toHexString()
 
         return UPSBPSPatchChecksums(sourceCRC32: expectedSourceCRC, targetCRC32: expectedTargetCRC, patchCRC32: expectedPatchCRC)
+    }
+
+    func verifyChecksums(source: Data, target: Data, patch: Data) async throws {
+        // Ensure the patch data includes the checksum section
+        let expectedChecksums = try getChecksums(from: patch)
+
+        async let sourceCRCTask = source.crc32()
+        async let targetCRCTask = target.crc32()
+        async let patchCRCTask = patch.subdata(in: 0..<(patch.count - 4)).crc32()
+
+        let (sourceCRC, targetCRC, patchCRC) = await (sourceCRCTask, targetCRCTask, patchCRCTask)
+
+        guard sourceCRC == expectedChecksums.sourceCRC32 else {
+            throw PatchError.checksumMismatch(type: "original", expected: expectedChecksums.sourceCRC32, actual: sourceCRC)
+        }
+        guard targetCRC == expectedChecksums.targetCRC32 else {
+            throw PatchError.checksumMismatch(type: "patched", expected: expectedChecksums.targetCRC32, actual: targetCRC)
+        }
+        guard patchCRC == expectedChecksums.patchCRC32 else {
+            throw PatchError.checksumMismatch(type: "patch", expected: expectedChecksums.patchCRC32, actual: patchCRC)
+        }
     }
 
     private func extractChecksum(patch: Data, offset: Int) -> Data {
