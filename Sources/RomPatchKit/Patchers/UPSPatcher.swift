@@ -14,7 +14,7 @@ public final actor UPSPatcher: ChecksumContaining {
         let targetSize: Int
     }
 
-    let checksumSectionSize = 12
+    public let checksumSectionSize = 12
 
     private let patchHeader = "UPS1".data(using: .utf8)!
 

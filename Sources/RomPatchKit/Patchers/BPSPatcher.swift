@@ -15,7 +15,7 @@ public final actor BPSPatcher: ChecksumContaining {
         let metadataSize: Int
     }
 
-    let checksumSectionSize = 12
+    public let checksumSectionSize = 12
 
     private let patchHeader = "BPS1".data(using: .utf8)!
 

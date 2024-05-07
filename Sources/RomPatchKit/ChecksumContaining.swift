@@ -21,7 +21,7 @@ public protocol ChecksumContaining<ChecksumSection>: Actor {
 
 extension ChecksumContaining where ChecksumSection == UPSBPSPatchChecksums {
 
-    func getChecksums(from patch: Data) throws -> UPSBPSPatchChecksums {
+    public func getChecksums(from patch: Data) throws -> UPSBPSPatchChecksums {
         guard patch.count > checksumSectionSize else {
             throw PatchError.unexpectedPatchEOF
         }
