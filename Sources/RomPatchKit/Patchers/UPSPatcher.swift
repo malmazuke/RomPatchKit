@@ -42,6 +42,18 @@ public final actor UPSPatcher: RomPatcher {
         return patchedRom
     }
 
+    public func getChecksums(from patch: Data) throws -> PatchChecksums? {
+        guard patch.count > checksumSectionSize else {
+            throw PatchError.unexpectedPatchEOF
+        }
+
+        let expectedSourceCRC = extractChecksum(patch: patch, offset: 0).toHexString()
+        let expectedTargetCRC = extractChecksum(patch: patch, offset: 4).toHexString()
+        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8).toHexString()
+
+        return PatchChecksums(sourceCRC32: expectedSourceCRC, targetCRC32: expectedTargetCRC, patchCRC32: expectedPatchCRC)
+    }
+
     private func parseFileSizes(_ patch: inout Data) throws -> FileSizes {
         let sourceSize = try Data.decodeNextVLI(from: &patch)
         let targetSize = try Data.decodeNextVLI(from: &patch)
@@ -75,29 +87,27 @@ public final actor UPSPatcher: RomPatcher {
     }
 
     private func verifyChecksums(source: Data, target: Data, patch: Data) async throws {
-        // Assume the last 12 bytes of the patch are the three CRC32 values (each 4 bytes).
-        guard patch.count >= checksumSectionSize else {
+        // Ensure the patch data includes the checksum section
+        let expectedChecksums = try getChecksums(from: patch)
+
+        guard let expectedChecksums else {
             throw PatchError.invalidPatchData
         }
 
         async let sourceCRCTask = source.crc32()
         async let targetCRCTask = target.crc32()
-        async let patchCRCTask = patch.subdata(in: 0..<(patch.endIndex - 4)).crc32() // Exclude the checksum section from the data we're checking
+        async let patchCRCTask = patch.subdata(in: 0..<(patch.count - 4)).crc32()
 
         let (sourceCRC, targetCRC, patchCRC) = await (sourceCRCTask, targetCRCTask, patchCRCTask)
 
-        let expectedSourceCRC = extractChecksum(patch: patch, offset: 0).toHexString()
-        let expectedTargetCRC = extractChecksum(patch: patch, offset: 4).toHexString()
-        let expectedPatchCRC = extractChecksum(patch: patch, offset: 8).toHexString()
-
-        guard sourceCRC == expectedSourceCRC else {
-            throw PatchError.checksumMismatch(type: "original", expected: expectedSourceCRC, actual: sourceCRC)
+        guard sourceCRC == expectedChecksums.sourceCRC32 else {
+            throw PatchError.checksumMismatch(type: "original", expected: expectedChecksums.sourceCRC32, actual: sourceCRC)
         }
-        guard targetCRC == expectedTargetCRC else {
-            throw PatchError.checksumMismatch(type: "patched", expected: expectedTargetCRC, actual: targetCRC)
+        guard targetCRC == expectedChecksums.targetCRC32 else {
+            throw PatchError.checksumMismatch(type: "patched", expected: expectedChecksums.targetCRC32, actual: targetCRC)
         }
-        guard patchCRC == expectedPatchCRC else {
-            throw PatchError.checksumMismatch(type: "patch", expected: expectedPatchCRC, actual: patchCRC)
+        guard patchCRC == expectedChecksums.patchCRC32 else {
+            throw PatchError.checksumMismatch(type: "patch", expected: expectedChecksums.patchCRC32, actual: patchCRC)
         }
     }
 
