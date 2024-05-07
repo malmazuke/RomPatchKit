@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol ChecksumContaining<ChecksumSection>: Actor {
+public protocol ChecksumContaining<ChecksumSection>: Actor {
 
     associatedtype ChecksumSection
 
