@@ -8,15 +8,6 @@
         "branch" : "main",
         "revision" : "3ee62ea40a63996b55818d44b3f0e56d8753be88"
       }
-    },
-    {
-      "identity" : "swift-hash",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/tayloraswift/swift-hash.git",
-      "state" : {
-        "revision" : "c7ba0cde5eb63042c2196b02b65a770101c1ac11",
-        "version" : "0.5.0"
-      }
     }
   ],
   "version" : 2

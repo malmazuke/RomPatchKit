@@ -5,9 +5,9 @@
 //  Created by Mark Feaver on 2/5/2024.
 //
 
-import CRC
 import CryptoKit
 import Foundation
+import zlib
 
 public struct RomUtils: Sendable {
 
@@ -28,7 +28,11 @@ public struct RomUtils: Sendable {
 extension Data {
 
     func crc32() -> String {
-        CRC32(hashing: self).description
+        let crc = self.withUnsafeBytes { buffer -> UInt32 in
+            guard let baseAddress = buffer.baseAddress else { return 0 }
+            return UInt32(zlib.crc32(0, baseAddress.assumingMemoryBound(to: Bytef.self), uInt(buffer.count)))
+        }
+        return String(format: "%08x", crc)
     }
 
     func toHexString() -> String {
