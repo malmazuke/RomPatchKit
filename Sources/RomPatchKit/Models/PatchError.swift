@@ -20,5 +20,6 @@ public enum PatchError: Error {
     case checksumMismatch(type: String, expected: String, actual: String)
     case dataProcessingError(String)
     case invalidPatchCommand
+    case romNotFoundInArchive
     case unknown
 }

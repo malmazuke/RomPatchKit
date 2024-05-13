@@ -15,4 +15,4 @@ Usage instructions and examples will be added here soon. Stay tuned!
 This library uses the following third party libraries, all with permissive licenses:
 
 - [Delta Codec for Cocoa](https://github.com/ably/delta-codec-cocoa) (MIT License) - used for XDelta patches.
-
+- [ZIPFoundation](https://github.com/weichsel/ZIPFoundation) (MIT License) - used to extract ROMs from zip archives.

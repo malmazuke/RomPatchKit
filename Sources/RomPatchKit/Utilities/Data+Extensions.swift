@@ -9,6 +9,18 @@ import Foundation
 
 extension Data {
 
+    static func from(potentiallyZippedURL url: URL) async throws -> Data {
+        let romData: Data
+
+        if url.isZIP {
+            romData = try await RomUtils.extractROMFromArchive(archiveURL: url)
+        } else {
+            romData = try Data(contentsOf: url)
+        }
+
+        return romData
+    }
+
     static func decodeNextVLI(from data: inout Data) throws -> Int {
         var result = 0, shift = 1
 

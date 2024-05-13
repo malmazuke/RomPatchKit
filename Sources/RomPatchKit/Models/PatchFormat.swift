@@ -6,14 +6,15 @@
 //
 
 public enum PatchFormat: String {
-    case ips = "IPS"
-    case ups = "UPS"
-    case aps = "APS"  // Typically for N64/GBA
-    case bps = "BPS"
-    case rup = "RUP"
-    case ppf = "PPF"
-    case mod = "MOD"  // For Paper Mario Star Rod
-    case vcdiff = "VCDiff"  // Also includes .xdelta files
+    case ips = "ips"
+    case ups = "ups"
+    case aps = "aps"  // Typically for N64/GBA
+    case bps = "bps"
+    case rup = "rup"
+    case ppf = "ppf"
+    case mod = "mod"  // For Paper Mario Star Rod
+    case xdelta = "xdelta"
+    case vcdiff = "vcdiff"
 
     static func from(fileExtension: String) -> PatchFormat? {
         switch fileExtension.lowercased() {
@@ -24,7 +25,8 @@ public enum PatchFormat: String {
         case "rup": return .rup
         case "ppf": return .ppf
         case "mod": return .mod
-        case "xdelta", "vcdiff": return .vcdiff
+        case "xdelta": return .xdelta
+        case "vcdiff": return .vcdiff
         default: return nil
         }
     }

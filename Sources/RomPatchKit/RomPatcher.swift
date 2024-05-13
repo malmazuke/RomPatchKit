@@ -16,7 +16,7 @@ public protocol RomPatcher: Actor {
 public extension RomPatcher {
 
     func applyPatch(romURL: URL, patchURL: URL) async throws -> Data {
-        let romData = try Data(contentsOf: romURL)
+        let romData = try await Data.from(potentiallyZippedURL: romURL)
         let patchData = try Data(contentsOf: patchURL)
 
         return try await applyPatch(rom: romData, patch: patchData)

@@ -6,21 +6,21 @@
 //
 
 import Foundation
+import ZIPFoundation
 
 public class RomPatcherFactory {
 
     public static func createPatcher(for patchURL: URL) throws -> RomPatcher {
-        let fileExtension = patchURL.pathExtension.lowercased()
+        let fileExtension = PatchFormat(rawValue: patchURL.pathExtension)
 
-        // TODO: Make these into enums
         switch fileExtension {
-        case "bps":
+        case .bps:
             return BPSPatcher()
-        case "ips":
+        case .ips:
             return IPSPatcher()
-        case "ups":
+        case .ups:
             return UPSPatcher()
-        case "xdelta":
+        case .xdelta:
             return XDeltaPatcher()
         default:
             throw PatchError.unsupportedPatchFormat

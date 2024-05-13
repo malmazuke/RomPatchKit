@@ -15,12 +15,14 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ably/delta-codec-cocoa.git", branch: "main"),
+        .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.19"),
     ],
     targets: [
         .target(
             name: "RomPatchKit",
             dependencies: [
                 .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa"),
+                .product(name: "ZIPFoundation", package: "zipfoundation"),
             ]
         ),
         .testTarget(
