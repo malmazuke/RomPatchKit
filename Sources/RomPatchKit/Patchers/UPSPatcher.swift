@@ -29,17 +29,15 @@ extension UPSPatcher: RomPatcher {
             throw PatchError.invalidPatchHeader
         }
 
-        var patchData = patch.dropFirst(patchHeader.count)
-
-        let fileSizes = try parseFileSizes(&patchData)
+        var patchPointer = patch.startIndex + patchHeader.count
+        let fileSizes = try parseFileSizes(patch, pointer: &patchPointer)
 
         guard rom.count == fileSizes.sourceSize else {
             throw PatchError.sourceSizeMismatch
         }
 
-        var patchedRom = rom
+        let patchedRom = try applyDifferences(rom: rom, patch: patch, pointer: &patchPointer, targetSize: fileSizes.targetSize)
 
-        try applyDifferences(to: &patchedRom, with: &patchData)
         try await verifyChecksums(source: rom, target: patchedRom, patch: patch)
 
         guard patchedRom.count == fileSizes.targetSize else {
@@ -49,36 +47,46 @@ extension UPSPatcher: RomPatcher {
         return patchedRom
     }
 
-    private func parseFileSizes(_ patch: inout Data) throws -> FileSizes {
-        let sourceSize = try Data.decodeNextVLI(from: &patch)
-        let targetSize = try Data.decodeNextVLI(from: &patch)
+    private func parseFileSizes(_ patch: Data, pointer: inout Int) throws -> FileSizes {
+        let sourceSize = try Data.decodeVLI(from: patch, offset: &pointer)
+        let targetSize = try Data.decodeVLI(from: patch, offset: &pointer)
 
         return FileSizes(sourceSize: sourceSize, targetSize: targetSize)
     }
 
-    private func applyDifferences(to rom: inout Data, with patchData: inout Data) throws {
-        var index = 0
-
-        while patchData.count > checksumSectionSize {
-            let offset = try Data.decodeNextVLI(from: &patchData)
-            index += offset
-
-            while let byte = patchData.popFirst(), byte != 0x00 {
-                // Ensure we do not write past the end of the original ROM.
-                if index < rom.count {
-                    rom[index] = rom[index] ^ byte // Apply the XOR operation.
-                } else {
-                    // If index is beyond the end of the ROM, XOR with 0x00.
-                    rom.append(byte ^ 0x00) // Equivalent to just appending byte.
-                }
-
-                index += 1 // Move to the next position in the ROM.
-            }
-
-            guard patchData.isEmpty == false else {
-                throw PatchError.unexpectedPatchEOF
-            }
+    /// Each hunk consists of a variable-width integer indicating the number of bytes which should be skipped (copied verbatim from the source file),
+    /// followed by a block of bytes which should be XORed with the source file to obtain a corresponding block of bytes in the destination file.
+    /// The XOR block is terminated with a zero byte; the zero byte also counts against the file pointer.
+    /// If the source and destination file sizes differ, the source file is treated as if it had an infinite number of zero bytes after its actual last byte.
+    /// Source: http://fileformats.archiveteam.org/wiki/UPS_(binary_patch_format)
+    /// 
+    private func applyDifferences(rom: Data, patch: Data, pointer: inout Int, targetSize: Int) throws -> Data {
+        var patchedRom = rom
+        if rom.count < targetSize {
+            patchedRom.append(contentsOf: repeatElement(UInt8(0), count: targetSize - rom.count))
         }
+        var romIndex = rom.startIndex
+
+        while pointer < patch.count - checksumSectionSize {
+            let offset = try Data.decodeVLI(from: patch, offset: &pointer)
+            romIndex += offset
+
+            while patch[pointer] != 0x00 {
+                let byte = patch[pointer]
+                if romIndex < rom.count {
+                    patchedRom[romIndex] ^= byte
+                } else {
+                    patchedRom[romIndex] = byte
+                }
+                pointer += 1
+                romIndex += 1
+            }
+
+            pointer += 1
+            romIndex += 1
+        }
+
+        return patchedRom
     }
 
 }
