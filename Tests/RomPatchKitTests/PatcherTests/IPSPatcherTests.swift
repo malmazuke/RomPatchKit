@@ -21,8 +21,9 @@ final class IPSPatcherTests: XCTestCase {
 
         romURL = testBundle.url(forResource: "test", withExtension: romExtension)!
         patchURL = testBundle.url(forResource: "patch", withExtension: patchExtension)!
-        largePatchURL = testBundle.url(forResource: "patch-large", withExtension: patchExtension)!
         expectedROMURL = testBundle.url(forResource: "expected", withExtension: romExtension)!
+
+        largePatchURL = testBundle.url(forResource: "patch-large", withExtension: patchExtension)!
         expectedLargeROMURL = testBundle.url(forResource: "expected-large", withExtension: romExtension)!
     }
 
