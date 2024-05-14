@@ -38,6 +38,7 @@ let package = Package(
                 .copy("Resources/xDelta/patch.xdelta"),
                 .copy("Resources/IPS/patch-large.ips"),
                 .copy("Resources/UPS/patch-large.ups"),
+                .copy("Resources/BPS/patch-large.bps"),
                 .copy("Resources/xDelta/patch-large.xdelta"),
             ]
         ),
