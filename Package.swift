@@ -31,10 +31,13 @@ let package = Package(
             resources: [
                 .copy("Resources/test.rom"),
                 .copy("Resources/expected.rom"),
-                .copy("Resources/patch.ips"),
-                .copy("Resources/patch.bps"),
-                .copy("Resources/patch.ups"),
-                .copy("Resources/patch.xdelta"),
+                .copy("Resources/expected-large.rom"),
+                .copy("Resources/IPS/patch.ips"),
+                .copy("Resources/BPS/patch.bps"),
+                .copy("Resources/UPS/patch.ups"),
+                .copy("Resources/xDelta/patch.xdelta"),
+                .copy("Resources/IPS/patch-large.ips"),
+                .copy("Resources/UPS/patch-large.ups"),
             ]
         ),
     ]
